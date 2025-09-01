@@ -169,7 +169,7 @@ const Home = () => {
             </FeatureIcon>
             <FeatureTitle>Fast Delivery</FeatureTitle>
             <FeatureDescription>
-              Free shipping on orders over $150. Get your battery delivered within 2-3 days.
+               Get your battery delivered within 2-3 days.
             </FeatureDescription>
           </FeatureCard>
           

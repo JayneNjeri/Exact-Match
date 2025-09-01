@@ -9,7 +9,7 @@ const ProductCard = styled.div`
   overflow: hidden;
   border: 1px solid var(--border-color);
   transition: all 0.3s ease;
-  display: ${props => props.view === 'list' ? 'flex' : 'block'};
+  display: ${props => props.$view === 'list' ? 'flex' : 'block'};
   
   &:hover {
     transform: translateY(-5px);
@@ -19,14 +19,14 @@ const ProductCard = styled.div`
 `;
 
 const ProductImage = styled.div`
-  height: ${props => props.view === 'list' ? '120px' : '200px'};
-  width: ${props => props.view === 'list' ? '120px' : '100%'};
+  height: ${props => props.$view === 'list' ? '120px' : '200px'};
+  width: ${props => props.$view === 'list' ? '120px' : '100%'};
   flex-shrink: 0;
   background: linear-gradient(135deg, #333, #555);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: ${props => props.view === 'list' ? '2rem' : '3rem'};
+  font-size: ${props => props.$view === 'list' ? '2rem' : '3rem'};
   position: relative;
   
   .badge {
@@ -45,9 +45,9 @@ const ProductImage = styled.div`
 const ProductInfo = styled.div`
   padding: 1.5rem;
   flex: 1;
-  display: ${props => props.view === 'list' ? 'flex' : 'block'};
-  flex-direction: ${props => props.view === 'list' ? 'column' : 'initial'};
-  justify-content: ${props => props.view === 'list' ? 'space-between' : 'initial'};
+  display: ${props => props.$view === 'list' ? 'flex' : 'block'};
+  flex-direction: ${props => props.$view === 'list' ? 'column' : 'initial'};
+  justify-content: ${props => props.$view === 'list' ? 'space-between' : 'initial'};
 `;
 
 const ProductHeader = styled.div`
@@ -105,13 +105,6 @@ const Price = styled.span`
   font-size: 1.5rem;
   font-weight: bold;
   color: var(--primary-color);
-`;
-
-const Rating = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: var(--secondary-color);
 `;
 
 const StockInfo = styled.div`
@@ -190,10 +183,6 @@ const BatteryCard = ({ battery, view = 'grid' }) => {
               </ProductDetails>
               <ProductPrice>
                 <Price>Ksh.{battery.price}</Price>
-                <Rating>
-                  <Star size={16} fill="currentColor" />
-                  <span>4.8 (124)</span>
-                </Rating>
               </ProductPrice>
             </ProductHeader>
             <ProductActions view={view}>
@@ -228,10 +217,6 @@ const BatteryCard = ({ battery, view = 'grid' }) => {
             </StockInfo>
             <ProductPrice>
               <Price>Ksh.{battery.price}</Price>
-              <Rating>
-                <Star size={16} fill="currentColor" />
-                <span>4.8 (124)</span>
-              </Rating>
             </ProductPrice>
             <AddToCartButton 
               disabled={!isInStock || alreadyInCart}

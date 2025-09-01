@@ -290,7 +290,7 @@ const Cart = () => {
                 <ItemSpecs>{item.specs}</ItemSpecs>
               </ItemDetails>
               
-              <ItemPrice>${item.price.toFixed(2)}</ItemPrice>
+              <ItemPrice>Ksh. {item.price.toFixed(2)}</ItemPrice>
               
               <QuantityControls>
                 <QuantityButton
@@ -319,24 +319,17 @@ const Cart = () => {
           
           <SummaryRow>
             <SummaryLabel>Subtotal:</SummaryLabel>
-            <SummaryValue>${subtotal.toFixed(2)}</SummaryValue>
+            <SummaryValue>Ksh. {subtotal.toFixed(2)}</SummaryValue>
           </SummaryRow>
-          
-          <SummaryRow>
-            <SummaryLabel>Shipping:</SummaryLabel>
-            <SummaryValue>
-              {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
-            </SummaryValue>
-          </SummaryRow>
-          
+  
           <SummaryRow>
             <SummaryLabel>Tax:</SummaryLabel>
-            <SummaryValue>${tax.toFixed(2)}</SummaryValue>
+            <SummaryValue>Ksh. {tax.toFixed(2)}</SummaryValue>
           </SummaryRow>
           
           <SummaryRow className="total">
             <SummaryLabel>Total:</SummaryLabel>
-            <SummaryValue>${total.toFixed(2)}</SummaryValue>
+            <SummaryValue>Ksh. {total.toFixed(2)}</SummaryValue>
           </SummaryRow>
           
           <CheckoutButton to="/checkout">

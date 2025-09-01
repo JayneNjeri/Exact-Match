@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search, ShoppingCart, Menu, X } from 'lucide-react';
 import styled from 'styled-components';
 import { useCart } from '../contexts/CartContext';
+import ThemeToggle from './ThemeToggle';
 
 const HeaderContainer = styled.header`
   background-color: var(--darker-bg);
@@ -196,10 +197,13 @@ const Header = () => {
           <NavLink to="/brands">Brands</NavLink>
         </NavLinks>
         
-        <CartButton to="/cart">
-          <ShoppingCart size={20} />
-          Cart ({cartCount})
-        </CartButton>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <ThemeToggle />
+          <CartButton to="/cart">
+            <ShoppingCart size={20} />
+            Cart ({cartCount})
+          </CartButton>
+        </div>
         
         <MobileMenuButton onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -222,6 +226,9 @@ const Header = () => {
           <NavLink to="/browse" onClick={() => setIsMobileMenuOpen(false)}>Browse</NavLink>
           <NavLink to="/categories" onClick={() => setIsMobileMenuOpen(false)}>Categories</NavLink>
           <NavLink to="/brands" onClick={() => setIsMobileMenuOpen(false)}>Brands</NavLink>
+          <div style={{ padding: '1rem', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'center' }}>
+            <ThemeToggle />
+          </div>
         </MobileNavLinks>
       </MobileMenu>
     </HeaderContainer>
