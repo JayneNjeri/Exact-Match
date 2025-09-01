@@ -170,17 +170,6 @@ Exact-Match/
 - [ ] Order tracking
 - [ ] Payment integration
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🎯 Next Steps
 
@@ -188,10 +177,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 2. **User Authentication**: Add login/register functionality
 3. **Product Details**: Create detailed product pages
 4. **Search & Filter**: Advanced search capabilities
-5. **Payment Integration**: Stripe or PayPal integration
+5. **Payment Integration**: Stripe or Mpesa integration
 6. **Admin Dashboard**: Enhanced admin interface
-7. **Mobile App**: React Native mobile application
-8. **Analytics**: User behavior tracking
+7. **Analytics**: User behavior tracking
 9. **SEO Optimization**: Server-side rendering
 10. **Testing**: Unit and integration tests
 An E-commerce site that allows users o buy and sell car batteries
