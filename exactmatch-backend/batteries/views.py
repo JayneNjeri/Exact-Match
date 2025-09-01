@@ -26,7 +26,9 @@ class BatteryFilter(filters_rf.FilterSet):
     min_price = filters_rf.NumberFilter(field_name="price", lookup_expr='gte')
     max_price = filters_rf.NumberFilter(field_name="price", lookup_expr='lte')
     brand = filters_rf.CharFilter(field_name="brand__name", lookup_expr='icontains')
-    category = filters_rf.CharFilter(field_name="category__name", lookup_expr='icontains')
+    category = filters_rf.CharFilter(field_name="categories__name", lookup_expr='icontains')
+    categories = filters_rf.BaseInFilter(field_name="categories__id", lookup_expr='in')
+    category_type = filters_rf.ChoiceFilter(field_name="categories__category_type", choices=Category.CATEGORY_TYPE_CHOICES)
     voltage = filters_rf.ChoiceFilter(choices=Battery.VOLTAGE_CHOICES)
     condition = filters_rf.ChoiceFilter(choices=Battery.CONDITION_CHOICES)
     min_amp_hours = filters_rf.NumberFilter(field_name="amp_hours", lookup_expr='gte')
@@ -34,38 +36,47 @@ class BatteryFilter(filters_rf.FilterSet):
     min_cca = filters_rf.NumberFilter(field_name="cold_cranking_amps", lookup_expr='gte')
     max_cca = filters_rf.NumberFilter(field_name="cold_cranking_amps", lookup_expr='lte')
     in_stock = filters_rf.BooleanFilter(method='filter_in_stock')
+    vehicle_search = filters_rf.CharFilter(method='filter_vehicle_compatibility')
     
     class Meta:
         model = Battery
-        fields = ['is_featured', 'is_popular', 'brand', 'category']
+        fields = ['is_featured', 'is_popular', 'brand']
     
     def filter_in_stock(self, queryset, name, value):
         if value:
             return queryset.filter(stock_quantity__gt=0)
         return queryset
+    
+    def filter_vehicle_compatibility(self, queryset, name, value):
+        """Filter batteries by vehicle compatibility"""
+        return queryset.filter(
+            Q(compatible_vehicles__icontains=value) |
+            Q(vehicle_makes__icontains=value) |
+            Q(vehicle_models__icontains=value)
+        )
 
 class BatteryListView(generics.ListAPIView):
-    queryset = Battery.objects.filter(is_active=True).select_related('brand', 'category')
+    queryset = Battery.objects.filter(is_active=True).select_related('brand').prefetch_related('categories')
     serializer_class = BatteryListSerializer
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = BatteryFilter
-    search_fields = ['name', 'model_number', 'brand__name', 'description', 'short_description']
+    search_fields = ['name', 'model_number', 'brand__name', 'description', 'short_description', 'compatible_vehicles']
     ordering_fields = ['price', 'created_at', 'name', 'amp_hours', 'cold_cranking_amps']
     ordering = ['-created_at']
 
 class FeaturedBatteriesView(generics.ListAPIView):
-    queryset = Battery.objects.filter(is_active=True, is_featured=True).select_related('brand', 'category')
+    queryset = Battery.objects.filter(is_active=True, is_featured=True).select_related('brand').prefetch_related('categories')
     serializer_class = BatteryListSerializer
     pagination_class = StandardResultsSetPagination
 
 class PopularBatteriesView(generics.ListAPIView):
-    queryset = Battery.objects.filter(is_active=True, is_popular=True).select_related('brand', 'category')
+    queryset = Battery.objects.filter(is_active=True, is_popular=True).select_related('brand').prefetch_related('categories')
     serializer_class = BatteryListSerializer
     pagination_class = StandardResultsSetPagination
 
 class BatteryDetailView(generics.RetrieveAPIView):
-    queryset = Battery.objects.filter(is_active=True).select_related('brand', 'category', 'seller')
+    queryset = Battery.objects.filter(is_active=True).select_related('brand', 'seller').prefetch_related('categories', 'images', 'reviews')
     serializer_class = BatteryDetailSerializer
     lookup_field = 'slug'
 
@@ -74,8 +85,24 @@ class BrandListView(generics.ListAPIView):
     serializer_class = BrandSerializer
 
 class CategoryListView(generics.ListAPIView):
-    queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
+    
+    def get_queryset(self):
+        category_type = self.request.query_params.get('type', None)
+        parent_id = self.request.query_params.get('parent', None)
+        
+        queryset = Category.objects.filter(is_active=True)
+        
+        if category_type:
+            queryset = queryset.filter(category_type=category_type)
+        
+        if parent_id:
+            queryset = queryset.filter(parent_category_id=parent_id)
+        elif parent_id is None and not category_type:
+            # If no parent specified and no type, return top-level categories
+            queryset = queryset.filter(parent_category__isnull=True)
+        
+        return queryset.order_by('display_order', 'name')
 
 class BatteryReviewListView(generics.ListAPIView):
     serializer_class = ReviewSerializer
@@ -112,7 +139,7 @@ class WishlistView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        return Wishlist.objects.filter(user=self.request.user).select_related('battery__brand', 'battery__category')
+        return Wishlist.objects.filter(user=self.request.user).select_related('battery__brand').prefetch_related('battery__categories')
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])

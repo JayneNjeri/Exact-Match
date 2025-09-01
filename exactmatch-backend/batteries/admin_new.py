@@ -92,17 +92,17 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'status', 'total_amount', 'created_at']
-    list_filter = ['status', 'created_at']
-    search_fields = ['id', 'user__username', 'shipping_address']
-    readonly_fields = ['id', 'created_at', 'updated_at']
+    list_display = ['order_number', 'user', 'status', 'total_amount', 'created_at']
+    list_filter = ['status', 'payment_method', 'created_at']
+    search_fields = ['order_number', 'user__username', 'shipping_address']
+    readonly_fields = ['order_number', 'created_at', 'updated_at']
     inlines = [OrderItemInline]
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ['order', 'battery', 'quantity', 'unit_price', 'total_price']
     list_filter = ['order__status']
-    search_fields = ['order__id', 'battery__name']
+    search_fields = ['order__order_number', 'battery__name']
 
 @admin.register(Wishlist)
 class WishlistAdmin(admin.ModelAdmin):

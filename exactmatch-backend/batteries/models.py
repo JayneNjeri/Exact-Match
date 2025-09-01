@@ -4,24 +4,50 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
 
 class Category(models.Model):
+    """Unified category system for all types of battery categorization"""
+    
+    CATEGORY_TYPE_CHOICES = [
+        ('vehicle_type', 'Vehicle Type'),  # SUV, Truck, Small Car, Matatu
+        ('battery_type', 'Battery Type'),  # AGM, Maintenance-Free, Flooded, Lithium
+        ('use_case', 'Use Case'),         # Private Car, Matatu, Truck, Solar/Backup
+        ('brand_series', 'Brand Series'), # For brand-specific series
+    ]
+    
     name = models.CharField(max_length=100)
+    category_type = models.CharField(max_length=20, choices=CATEGORY_TYPE_CHOICES, 
+                                   default='vehicle_type',
+                                   help_text="Type of categorization this represents")
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to='categories/', blank=True, null=True)
+    parent_category = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True,
+                                      related_name='subcategories',
+                                      help_text="For hierarchical categories")
+    
+    # Display settings
+    is_active = models.BooleanField(default=True)
+    display_order = models.PositiveIntegerField(default=0, help_text="Order for display")
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = "Categories"
+        ordering = ['category_type', 'display_order', 'name']
 
     def __str__(self):
-        return self.name
+        return f"{self.get_category_type_display()}: {self.name}"
 
 class Brand(models.Model):
     name = models.CharField(max_length=100)
     logo = models.ImageField(upload_to='brands/', blank=True, null=True)
     description = models.TextField(blank=True)
     website = models.URLField(blank=True)
+    country = models.CharField(max_length=100, blank=True, help_text="Country of origin")
+    is_popular = models.BooleanField(default=False, help_text="Mark as popular brand")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -43,7 +69,21 @@ class Battery(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE, related_name='batteries')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='batteries')
+    
+    # Enhanced Categorization - Multiple categories for different purposes
+    categories = models.ManyToManyField(Category, related_name='batteries', blank=True,
+                                      help_text="Multiple categories (vehicle type, battery type, use case)")
+    
+    # Enhanced Vehicle Compatibility - This is the killer feature!
+    compatible_vehicles = models.JSONField(default=list, blank=True, 
+                                         help_text="List of compatible vehicle models e.g., ['Toyota Vitz', 'Mazda Demio', 'Nissan March']")
+    
+    # Vehicle compatibility search helpers
+    vehicle_makes = models.JSONField(default=list, blank=True,
+                                   help_text="List of vehicle makes e.g., ['Toyota', 'Mazda', 'Nissan']")
+    vehicle_models = models.JSONField(default=list, blank=True,
+                                    help_text="List of specific models e.g., ['Vitz', 'Demio', 'March']")
+    
     model_number = models.CharField(max_length=100, unique=True)
     
     # Technical Specifications
@@ -89,7 +129,8 @@ class Battery(models.Model):
             models.Index(fields=['is_featured', 'is_active']),
             models.Index(fields=['is_popular', 'is_active']),
             models.Index(fields=['brand', 'is_active']),
-            models.Index(fields=['category', 'is_active']),
+            models.Index(fields=['price', 'is_active']),
+            models.Index(fields=['voltage', 'is_active']),
         ]
 
     def __str__(self):

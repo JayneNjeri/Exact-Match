@@ -1,19 +1,38 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import (
-    Battery, BatteryImage, Brand, Category, Review, 
-    Order, OrderItem, Wishlist
+    Battery, BatteryImage, Brand, Category,
+    Review, Order, OrderItem, Wishlist
 )
 
 class BrandSerializer(serializers.ModelSerializer):
+    battery_count = serializers.SerializerMethodField()
+    
     class Meta:
         model = Brand
-        fields = ['id', 'name', 'logo', 'description', 'website']
+        fields = ['id', 'name', 'logo', 'description', 'website', 'country', 'is_popular', 'battery_count']
+    
+    def get_battery_count(self, obj):
+        return obj.batteries.filter(is_active=True).count()
 
 class CategorySerializer(serializers.ModelSerializer):
+    battery_count = serializers.SerializerMethodField()
+    subcategories = serializers.SerializerMethodField()
+    
     class Meta:
         model = Category
-        fields = ['id', 'name', 'description', 'image']
+        fields = [
+            'id', 'name', 'description', 'category_type', 
+            'parent_category', 'image', 'is_active', 'display_order',
+            'battery_count', 'subcategories'
+        ]
+    
+    def get_battery_count(self, obj):
+        return obj.batteries.filter(is_active=True).count()
+    
+    def get_subcategories(self, obj):
+        subcategories = obj.subcategories.filter(is_active=True).order_by('display_order', 'name')
+        return CategorySerializer(subcategories, many=True, context=self.context).data
 
 class BatteryImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -32,7 +51,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 class BatteryListSerializer(serializers.ModelSerializer):
     brand = BrandSerializer(read_only=True)
-    category = CategorySerializer(read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
     primary_image = serializers.SerializerMethodField()
     average_rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
@@ -40,11 +59,11 @@ class BatteryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Battery
         fields = [
-            'id', 'name', 'brand', 'category', 'model_number', 'voltage',
-            'amp_hours', 'cold_cranking_amps', 'condition', 'price', 
-            'original_price', 'short_description', 'is_featured', 'is_popular',
-            'is_in_stock', 'stock_quantity', 'discount_percentage', 'slug',
-            'primary_image', 'average_rating', 'review_count', 'created_at'
+            'id', 'name', 'brand', 'categories', 'model_number', 'voltage', 
+            'amp_hours', 'cold_cranking_amps', 'condition', 'price', 'original_price', 
+            'short_description', 'is_featured', 'is_popular', 'is_in_stock', 
+            'stock_quantity', 'discount_percentage', 'slug', 'primary_image', 
+            'average_rating', 'review_count', 'created_at'
         ]
     
     def get_primary_image(self, obj):
@@ -66,7 +85,7 @@ class BatteryListSerializer(serializers.ModelSerializer):
 
 class BatteryDetailSerializer(serializers.ModelSerializer):
     brand = BrandSerializer(read_only=True)
-    category = CategorySerializer(read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
     images = BatteryImageSerializer(many=True, read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True)
     seller_name = serializers.CharField(source='seller.username', read_only=True)
@@ -76,13 +95,14 @@ class BatteryDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Battery
         fields = [
-            'id', 'name', 'brand', 'category', 'model_number', 'voltage',
+            'id', 'name', 'brand', 'categories', 'model_number', 'voltage',
             'amp_hours', 'cold_cranking_amps', 'reserve_capacity', 'length',
             'width', 'height', 'weight', 'condition', 'price', 'original_price',
             'stock_quantity', 'description', 'short_description', 'features',
-            'compatibility', 'is_featured', 'is_popular', 'is_in_stock',
-            'discount_percentage', 'seller_name', 'images', 'reviews',
-            'average_rating', 'review_count', 'created_at', 'updated_at'
+            'compatibility', 'compatible_vehicles', 'vehicle_makes', 'vehicle_models',
+            'is_featured', 'is_popular', 'is_in_stock', 'discount_percentage', 
+            'seller_name', 'images', 'reviews', 'average_rating', 'review_count', 
+            'created_at', 'updated_at'
         ]
     
     def get_average_rating(self, obj):
