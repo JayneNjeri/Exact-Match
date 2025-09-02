@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, ShoppingCart, Menu, X } from 'lucide-react';
 import styled from 'styled-components';
 import { useCart } from '../contexts/CartContext';
@@ -132,6 +132,26 @@ const MobileMenu = styled.div`
   background-color: var(--darker-bg);
   border-bottom: 1px solid var(--border-color);
   padding: 1rem;
+  z-index: 1000;
+  
+  &.open {
+    display: block;
+  }
+  
+  @media (min-width: 769px) {
+    display: none !important;
+  }
+`;
+
+const MobileMenuOverlay = styled.div`
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
   
   &.open {
     display: block;
@@ -162,17 +182,45 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cartCount } = useCart();
+  const navigate = useNavigate();
+  const mobileMenuRef = useRef(null);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isMobileMenuOpen]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Implement search functionality
-      console.log('Searching for:', searchQuery);
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery(''); // Clear search after submitting
+      setIsMobileMenuOpen(false); // Close mobile menu when search is performed
     }
   };
 
   return (
-    <HeaderContainer>
+    <HeaderContainer ref={mobileMenuRef}>
       <Nav>
         <Logo to="/">
           🔋 ExactMatch
@@ -212,13 +260,15 @@ const Header = () => {
       
       <MobileMenu className={isMobileMenuOpen ? 'open' : ''}>
         <MobileSearchContainer>
-          <Search size={20} color="var(--text-muted)" />
-          <SearchInput
-            type="text"
-            placeholder="Search batteries..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+            <Search size={20} color="var(--text-muted)" />
+            <SearchInput
+              type="text"
+              placeholder="Search batteries..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </form>
         </MobileSearchContainer>
         
         <MobileNavLinks>
@@ -231,6 +281,12 @@ const Header = () => {
           </div>
         </MobileNavLinks>
       </MobileMenu>
+      
+      {/* Overlay for mobile menu */}
+      <MobileMenuOverlay 
+        className={isMobileMenuOpen ? 'open' : ''} 
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
     </HeaderContainer>
   );
 };

@@ -51,7 +51,7 @@ const ProductInfo = styled.div`
 `;
 
 const ProductHeader = styled.div`
-  ${props => props.view === 'list' && `
+  ${props => props.$view === 'list' && `
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -60,13 +60,13 @@ const ProductHeader = styled.div`
 `;
 
 const ProductDetails = styled.div`
-  ${props => props.view === 'list' && `
+  ${props => props.$view === 'list' && `
     flex: 1;
   `}
 `;
 
 const ProductActions = styled.div`
-  ${props => props.view === 'list' && `
+  ${props => props.$view === 'list' && `
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -108,7 +108,7 @@ const Price = styled.span`
 `;
 
 const StockInfo = styled.div`
-  color: ${props => props.inStock ? 'var(--success-color)' : 'var(--error-color)'};
+  color: ${props => props.$inStock ? 'var(--success-color)' : 'var(--error-color)'};
   font-size: 0.875rem;
   margin-bottom: 1rem;
   font-weight: 500;
@@ -153,16 +153,16 @@ const BatteryCard = ({ battery, view = 'grid' }) => {
   };
   
   return (
-    <ProductCard view={view}>
-      <ProductImage view={view}>
+    <ProductCard $view={view}>
+      <ProductImage $view={view}>
         🔋
         {battery.is_featured && <div className="badge">Featured</div>}
       </ProductImage>
-      <ProductInfo view={view}>
+      <ProductInfo $view={view}>
         {view === 'list' ? (
           <>
-            <ProductHeader view={view}>
-              <ProductDetails view={view}>
+            <ProductHeader $view={view}>
+              <ProductDetails $view={view}>
                 <ProductBrand>{battery.brand.name}</ProductBrand>
                 <ProductTitle>
                   <Link 
@@ -185,8 +185,8 @@ const BatteryCard = ({ battery, view = 'grid' }) => {
                 <Price>Ksh.{battery.price}</Price>
               </ProductPrice>
             </ProductHeader>
-            <ProductActions view={view}>
-              <StockInfo inStock={isInStock}>
+            <ProductActions $view={view}>
+              <StockInfo $inStock={isInStock}>
                 {isInStock ? `${battery.stock_quantity} in stock` : 'Out of stock'}
               </StockInfo>
               <AddToCartButton 
@@ -212,7 +212,7 @@ const BatteryCard = ({ battery, view = 'grid' }) => {
             <ProductSpecs>
               {battery.voltage} • {battery.amp_hours}Ah • {battery.cold_cranking_amps}A CCA
             </ProductSpecs>
-            <StockInfo inStock={isInStock}>
+            <StockInfo $inStock={isInStock}>
               {isInStock ? `${battery.stock_quantity} in stock` : 'Out of stock'}
             </StockInfo>
             <ProductPrice>

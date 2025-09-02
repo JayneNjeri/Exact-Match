@@ -24,7 +24,12 @@ export const batteryAPI = {
   getPopularBatteries: () => api.get('/batteries/popular/'),
   
   // Search batteries
-  searchBatteries: (query) => api.get('/batteries/search/', { params: { q: query } }),
+  searchBatteries: (query) => {
+    console.log('API: Searching for:', query);
+    const request = api.get('/batteries/', { params: { search: query } });
+    console.log('API: Request URL will be:', `${API_BASE_URL}/batteries/?search=${encodeURIComponent(query)}`);
+    return request;
+  },
 };
 
 // Category API endpoints
@@ -57,5 +62,12 @@ export const reviewAPI = {
 export const inquiryAPI = {
   createInquiry: (inquiryData) => api.post('/inquiries/', inquiryData),
 };
+
+// Direct exports for convenience
+export const searchBatteries = (query) => batteryAPI.searchBatteries(query);
+export const getBatteries = (params) => batteryAPI.getBatteries(params);
+export const getBattery = (id) => batteryAPI.getBattery(id);
+export const getCategories = (params) => categoryAPI.getCategories(params);
+export const getBrands = () => brandAPI.getBrands();
 
 export default api;

@@ -11,6 +11,7 @@ import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
+import SearchResults from './pages/SearchResults';
 import './styles/globals.css';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
               <Route path="/categories" element={<Categories />} />
               <Route path="/brands" element={<Brands />} />
               <Route path="/browse" element={<BrowseBatteries />} />
+              <Route path="/search" element={<SearchResults />} />
               <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
